@@ -19,6 +19,8 @@ namespace ip2wildcard
 
             public const string OutputFile = "output-file";
 
+            public const string UnixNewlines = "unix-newlines";
+
             public const string Version = "version";
 
             public const string Help = "help";
@@ -28,6 +30,7 @@ namespace ip2wildcard
         {
             { ArgumentKeys.InputUrl, ("A valid HTTP(S) URL to a plaintext input file containing a list of subnets. Each subnet must be on a separate line denoted by: the first usable address followed by a single space (' '), then the last usable address. (e.g. '192.168.0.0 192.168.0.24')", IsRequired: true, IsValueRequired: true) },
             { ArgumentKeys.OutputFile, ("A path to a file to write the output to. If this is omitted, then write to stdout instead.", IsRequired: false, IsValueRequired: true) },
+            { ArgumentKeys.UnixNewlines, ("Explicitly use UNIX newlines in the output. If this is not passed, defaults to the newline character(s) appropriate for the current environment.", IsRequired: false, IsValueRequired: false) },
             { ArgumentKeys.Version, ("Show version information.", IsRequired: false, IsValueRequired: false) },
             { ArgumentKeys.Help, ("Show this text.", IsRequired: false, IsValueRequired: false) },
         };
@@ -77,7 +80,11 @@ namespace ip2wildcard
                             outputStream = Console.OpenStandardOutput();
                         }
 
-                        await Program.WriteOutAsync(networkList, outputStream, Environment.NewLine, cancellationToken: cts.Token);
+                        var newlineDelimiter = arguments.ContainsKey(ArgumentKeys.UnixNewlines)
+                            ? new string((char)10, 1)
+                            : Environment.NewLine;
+
+                        await Program.WriteOutAsync(networkList, outputStream, newlineDelimiter, cancellationToken: cts.Token);
 
                         exitCode = 0;
                     }
